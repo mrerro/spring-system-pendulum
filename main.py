@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5 import QtCore, QtWidgets, QtChart
-from PyQt5.QtGui import QPainter
+from PyQt5 import QtCore, QtWidgets, QtChart, QtGui
 from pylab import *
 from scipy.integrate import *
+
+t = []
 
 
 class Ui_Form(object):
@@ -67,9 +68,10 @@ class Ui_Form(object):
         self.drawingArea.setObjectName("drawingArea")
         self.chartView.setGeometry(QtCore.QRect(0, 0, 761, 501))
         self.chartView.setObjectName("chartView")
-        self.chartView.setRenderHint(QPainter.Antialiasing)
+        self.chartView.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.chartView.setFocusPolicy(QtCore.Qt.NoFocus)
         self.chart.legend().setVisible(False)
-        #self.chart.setTitle("Nested donuts demo")
+        # self.chart.setTitle("Nested donuts demo")
         self.chart.setAnimationOptions(QtChart.QChart.AllAnimations)
         self.chart.createDefaultAxes()
         self.label_4.setGeometry(QtCore.QRect(20, 514, 100, 16))
@@ -98,10 +100,18 @@ class Ui_Form(object):
 
         self.timer.setInterval(100)
 
-        #self.timer.timeout.connect(self.onTimer)
+        # self.timer.timeout.connect(self.onTimer)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
+
+        Form.setTabOrder(self.N, self.F)
+        Form.setTabOrder(self.F, self.w)
+        Form.setTabOrder(self.w, self.fi)
+        Form.setTabOrder(self.fi, self.k)
+        Form.setTabOrder(self.k, self.t)
+        Form.setTabOrder(self.t, self.btn_start)
+        Form.setTabOrder(self.btn_start, self.btn_pause)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -109,11 +119,49 @@ class Ui_Form(object):
         self.label.setText(_translate("Form", "w, рад"))
         self.label_2.setText(_translate("Form", "fi, рад"))
         self.btn_start.setText(_translate("Form", "Старт"))
-        self.btn_pause.setText(_translate("Form", "Пауза"))
+        self.btn_pause.setText(_translate("Form", "Стереть"))
         self.label_3.setText(_translate("Form", "F, Н"))
         self.label_4.setText(_translate("Form", "N"))
         self.label_5.setText(_translate("Form", "k, Н/м"))
         self.label_6.setText(_translate("Form", "t"))
+
+
+def on_t_editing_finished():
+    set_t()
+    ui.chart.axisX.setRange(0, ui.t.value())
+
+
+def on_start_clicked():
+    if not ui.btn_pause.isEnabled():
+        result = system_calculation()
+        for k in range(0, int(ui.N.value())):
+            series = QtChart.QLineSeries()
+            for i in range(0, len(t)):
+                series.append(t[i], result[:, k][i])
+            ui.chart.addSeries(series)
+
+    set_disabled_splin_boxes(True)
+    # ui.timer.start()
+    ui.btn_start.setDisabled(True)
+    # ui.btn_pause.setText("Пауза")
+    ui.btn_pause.setDisabled(False)
+
+
+def on_pause_clicked():
+    ui.btn_start.setDisabled(False)
+    ui.btn_pause.setDisabled(True)
+    set_disabled_splin_boxes(False)
+    ui.chartView.update()
+    # if ui.timer.isActive():
+    #     ui.timer.stop()
+    #     ui.btn_start.setDisabled(False)
+    #     ui.btn_pause.setText("Стоп")
+    # else:
+    #     ui.btn_pause.setDisabled(True)
+    #     ui.btn_pause.setText("Пауза")
+    #     set_disabled_splin_boxes(False)
+    #     # series->clear()
+    #     ui.chartView.update()
 
 
 def set_disabled_splin_boxes(value):
@@ -125,40 +173,19 @@ def set_disabled_splin_boxes(value):
     ui.t.setDisabled(value)
 
 
-def on_t_editing_finished():
-    ui.chart.axisX.setRange(0, ui.t.value())
-
-
-def on_start_clicked():
-    if not ui.btn_pause.isEnabled():
-        system_calculation()
-    set_disabled_splin_boxes(True)
-    ui.timer.start()
-    ui.btn_start.setDisabled(True)
-    ui.btn_pause.setText("Пауза")
-    ui.btn_pause.setDisabled(False)
-
-
-def on_pause_clicked():
-    if ui.timer.isActive():
-        ui.timer.stop()
-        ui.btn_start.setDisabled(False)
-        ui.btn_pause.setText("Стоп")
-    else:
-        ui.btn_pause.setDisabled(True)
-        ui.btn_pause.setText("Пауза")
-        set_disabled_splin_boxes(False)
-        # series->clear()
-        ui.chartView.update()
+def set_t():
+    global t
+    t = arange(0, ui.t.value(), 0.1)
 
 
 def system_calculation():
-    N = ui.N.value()
+    global t
+    N = int(ui.N.value())
     F0 = ui.F.value()
     w = ui.w.value()
     fi = ui.fi.value()
     k = ui.k.value()
-    t = arange(0, ui.t.value(), 0.1)
+    set_t()
     Y0 = [0]
     for i in range(1, N):
         Y0.append(0)
@@ -180,5 +207,9 @@ if __name__ == "__main__":
     Form = QtWidgets.QWidget()
     ui = Ui_Form()
     ui.setupUi(Form)
+    ui.btn_start.clicked.connect(on_start_clicked)
+    ui.btn_pause.clicked.connect(on_pause_clicked)
+    ui.t.editingFinished.connect(on_t_editing_finished)
+    ui.btn_pause.setDisabled(True)
     Form.show()
     sys.exit(app.exec_())

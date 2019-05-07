@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5 import QtCore, QtWidgets, QtChart, QtGui
-from pylab import *
+from numpy import *
 from scipy.integrate import *
 
 t = []
@@ -127,7 +127,6 @@ def on_t_editing_finished():
 
 
 def on_start_clicked():
-    # global series
     if not ui.btn_pause.isEnabled():
         result = system_calculation()
         for k in range(0, int(ui.N.value())):

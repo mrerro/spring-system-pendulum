@@ -5,6 +5,7 @@ from pylab import *
 from scipy.integrate import *
 
 t = []
+series = []
 
 
 class Ui_Form(object):
@@ -26,11 +27,10 @@ class Ui_Form(object):
         self.btn_pause = QtWidgets.QPushButton(Form)
         self.btn_start = QtWidgets.QPushButton(Form)
 
-        self.timer = QtCore.QTimer(Form)
-
-        self.drawingArea = QtWidgets.QWidget(Form)
-        self.chartView = QtChart.QChartView(self.drawingArea)
+        self.chartView = QtChart.QChartView(Form)
         self.chart = self.chartView.chart()
+        self.axisX = QtChart.QValueAxis()
+        self.axisY = QtChart.QValueAxis()
 
     def setupUi(self, Form):
         Form.setObjectName("Form")
@@ -63,17 +63,12 @@ class Ui_Form(object):
         self.F.setObjectName("F")
         self.label_3.setGeometry(QtCore.QRect(20, 553, 100, 13))
         self.label_3.setObjectName("label_3")
-        self.drawingArea.setGeometry(QtCore.QRect(20, 10, 761, 501))
-        self.drawingArea.setStyleSheet("border:1px solid black")
-        self.drawingArea.setObjectName("drawingArea")
-        self.chartView.setGeometry(QtCore.QRect(0, 0, 761, 501))
+        self.chartView.setGeometry(QtCore.QRect(20, 10, 761, 501))
         self.chartView.setObjectName("chartView")
         self.chartView.setRenderHint(QtGui.QPainter.Antialiasing)
         self.chartView.setFocusPolicy(QtCore.Qt.NoFocus)
         self.chart.legend().setVisible(False)
-        # self.chart.setTitle("Nested donuts demo")
-        self.chart.setAnimationOptions(QtChart.QChart.AllAnimations)
-        self.chart.createDefaultAxes()
+        # self.chart.setAnimationOptions(QtChart.QChart.AllAnimations)
         self.label_4.setGeometry(QtCore.QRect(20, 514, 100, 16))
         self.label_4.setObjectName("label_4")
         self.N.setGeometry(QtCore.QRect(20, 531, 100, 22))
@@ -98,9 +93,9 @@ class Ui_Form(object):
         self.label_6.setGeometry(QtCore.QRect(679, 516, 100, 16))
         self.label_6.setObjectName("label_6")
 
-        self.timer.setInterval(100)
-
-        # self.timer.timeout.connect(self.onTimer)
+        # add Axis
+        self.chart.addAxis(self.axisX, QtCore.Qt.AlignBottom)
+        self.chart.addAxis(self.axisY, QtCore.Qt.AlignLeft)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -128,22 +123,23 @@ class Ui_Form(object):
 
 def on_t_editing_finished():
     set_t()
-    ui.chart.axisX.setRange(0, ui.t.value())
+    ui.chart.axisX().setRange(0, ui.t.value())
 
 
 def on_start_clicked():
+    # global series
     if not ui.btn_pause.isEnabled():
         result = system_calculation()
         for k in range(0, int(ui.N.value())):
-            series = QtChart.QLineSeries()
+            series.append(QtChart.QLineSeries())
             for i in range(0, len(t)):
-                series.append(t[i], result[:, k][i])
-            ui.chart.addSeries(series)
+                series[k].append(t[i], result[:, k][i])
+            ui.chart.addSeries(series[k])
+            series[k].attachAxis(ui.axisX)
+            series[k].attachAxis(ui.axisY)
 
     set_disabled_splin_boxes(True)
-    # ui.timer.start()
     ui.btn_start.setDisabled(True)
-    # ui.btn_pause.setText("Пауза")
     ui.btn_pause.setDisabled(False)
 
 
@@ -151,17 +147,8 @@ def on_pause_clicked():
     ui.btn_start.setDisabled(False)
     ui.btn_pause.setDisabled(True)
     set_disabled_splin_boxes(False)
-    ui.chartView.update()
-    # if ui.timer.isActive():
-    #     ui.timer.stop()
-    #     ui.btn_start.setDisabled(False)
-    #     ui.btn_pause.setText("Стоп")
-    # else:
-    #     ui.btn_pause.setDisabled(True)
-    #     ui.btn_pause.setText("Пауза")
-    #     set_disabled_splin_boxes(False)
-    #     # series->clear()
-    #     ui.chartView.update()
+    for k in range(0, int(ui.N.value())):
+        series[k].clear()
 
 
 def set_disabled_splin_boxes(value):
@@ -170,7 +157,6 @@ def set_disabled_splin_boxes(value):
     ui.w.setDisabled(value)
     ui.fi.setDisabled(value)
     ui.k.setDisabled(value)
-    ui.t.setDisabled(value)
 
 
 def set_t():

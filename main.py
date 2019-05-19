@@ -1,40 +1,40 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5 import QtCore, QtWidgets, QtChart, QtGui
-from numpy import *
-from scipy.integrate import *
+from PyQt5 import QtCore, QtWidgets, QtChart, QtGui #Подключаем библиотеки PyQT для отрисовки окон и графиков
+from numpy import * # библиотеки для использования матриц
+from scipy.integrate import * # библиотеки для численного решения системы урний
 
-t = []
-series = []
+t = [] # массив временных промежутков для расчета системы уравнений и построения графика
+series = [] # массив линий ресующахся на графике
 
 
-class Ui_Form(object):
-    def __init__(self):
-        self.label = QtWidgets.QLabel(Form)
+class Ui_Form(object): # класс нашей формы
+    def __init__(self): # основной конструктор 
+        self.label = QtWidgets.QLabel(Form) # создаем элементы подписи размерностей у полей
         self.label_2 = QtWidgets.QLabel(Form)
         self.label_3 = QtWidgets.QLabel(Form)
         self.label_4 = QtWidgets.QLabel(Form)
         self.label_5 = QtWidgets.QLabel(Form)
         self.label_6 = QtWidgets.QLabel(Form)
 
-        self.t = QtWidgets.QDoubleSpinBox(Form)
+        self.t = QtWidgets.QDoubleSpinBox(Form) # созда ем элементы числовых полей для ввода значений
         self.k = QtWidgets.QDoubleSpinBox(Form)
         self.N = QtWidgets.QDoubleSpinBox(Form)
         self.F = QtWidgets.QDoubleSpinBox(Form)
         self.fi = QtWidgets.QDoubleSpinBox(Form)
         self.w = QtWidgets.QDoubleSpinBox(Form)
 
-        self.btn_pause = QtWidgets.QPushButton(Form)
-        self.btn_start = QtWidgets.QPushButton(Form)
+        self.btn_pause = QtWidgets.QPushButton(Form) # создаем кнопку паузы
+        self.btn_start = QtWidgets.QPushButton(Form) # создаем кнопку старт
 
-        self.chartView = QtChart.QChartView(Form)
-        self.chart = self.chartView.chart()
-        self.axisX = QtChart.QValueAxis()
-        self.axisY = QtChart.QValueAxis()
+        self.chartView = QtChart.QChartView(Form) # создаем поле для графиков
+        self.chart = self.chartView.chart() # получаем ссылку на график из chartView
+        self.axisX = QtChart.QValueAxis() # создаем ось Х
+        self.axisY = QtChart.QValueAxis() # создаем ось У
 
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(800, 600)
+    def setupUi(self, Form): # функция расстоновки созданных элементов на FORM
+        Form.setObjectName("Form") #задание внетреннего имени для Form
+        Form.resize(800, 600) # задание размера окна
         self.w.setGeometry(QtCore.QRect(140, 530, 100, 22))
         self.w.setDecimals(4)
         self.w.setMinimum(0.0)
@@ -185,16 +185,16 @@ def system_calculation():
     return odeint(f, Y0, t)
 
 
-if __name__ == "__main__":
-    import sys
+if __name__ == "__main__": #  функция мейн точка фхода программы
+    import sys # системная библиотека для окна
 
-    app = QtWidgets.QApplication(sys.argv)
-    Form = QtWidgets.QWidget()
-    ui = Ui_Form()
-    ui.setupUi(Form)
-    ui.btn_start.clicked.connect(on_start_clicked)
-    ui.btn_pause.clicked.connect(on_pause_clicked)
-    ui.t.editingFinished.connect(on_t_editing_finished)
-    ui.btn_pause.setDisabled(True)
-    Form.show()
-    sys.exit(app.exec_())
+    app = QtWidgets.QApplication(sys.argv) # основной обработчик приложения (отвечает за цикл отрисовки)
+    Form = QtWidgets.QWidget() # создается виджет(зона) под форму
+    ui = Ui_Form() # создается нашь класс формы
+    ui.setupUi(Form) # устанавливаем на виджет наши ui контроллы (кнопки поля ...)
+    ui.btn_start.clicked.connect(on_start_clicked) # соединяем функцию on_start_clicked с нажатием на кнопку старт на форме
+    ui.btn_pause.clicked.connect(on_pause_clicked) # --//-- тоже для кнопки пауза
+    ui.t.editingFinished.connect(on_t_editing_finished) # соединяем функцию on_t_editing_finished с эвентом что мы закончили редактировать поле t
+    ui.btn_pause.setDisabled(True) # желаем кнопку паузы отключеной
+    Form.show() # показываем форму
+    sys.exit(app.exec_()) # обработчик цикла приложения

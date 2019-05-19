@@ -35,11 +35,11 @@ class Ui_Form(object): # класс нашей формы
     def setupUi(self, Form): # функция расстоновки созданных элементов на FORM
         Form.setObjectName("Form") #задание внетреннего имени для Form
         Form.resize(800, 600) # задание размера окна
-        self.w.setGeometry(QtCore.QRect(140, 530, 100, 22))
-        self.w.setDecimals(4)
-        self.w.setMinimum(0.0)
-        self.w.setMaximum(100.0)
-        self.w.setProperty("value", 5 / (2 * 3.1415))
+        self.w.setGeometry(QtCore.QRect(140, 530, 100, 22)) # установка геометрии элемента(координата на форме по х, координита на форме по у, ширина , высота )
+        self.w.setDecimals(4) # установка количества знаков после запятой для числового поля
+        self.w.setMinimum(0.0) # установка мин значения для числового поля
+        self.w.setMaximum(100.0) # установка макс значения для числового поля
+        self.w.setProperty("value", 5 / (2 * 3.1415)) # установка начального значения
         self.w.setObjectName("w")
         self.label.setGeometry(QtCore.QRect(140, 513, 100, 13))
         self.label.setObjectName("label")
@@ -94,13 +94,13 @@ class Ui_Form(object): # класс нашей формы
         self.label_6.setObjectName("label_6")
 
         # add Axis
-        self.chart.addAxis(self.axisX, QtCore.Qt.AlignBottom)
-        self.chart.addAxis(self.axisY, QtCore.Qt.AlignLeft)
+        self.chart.addAxis(self.axisX, QtCore.Qt.AlignBottom) # привязка созданной оси self.axisX к графику в расоположение внизу
+        self.chart.addAxis(self.axisY, QtCore.Qt.AlignLeft) # привязка созданной оси self.axisY к графику в расоположение слева
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(Form) # вызов функции для задания текста на лейблы с подписями
+        QtCore.QMetaObject.connectSlotsByName(Form) # добавление системных эвентов на форму (закрытие и т.д)
 
-        Form.setTabOrder(self.N, self.F)
+        Form.setTabOrder(self.N, self.F) # уствновка порядка обхода элементов при табуляции
         Form.setTabOrder(self.F, self.w)
         Form.setTabOrder(self.w, self.fi)
         Form.setTabOrder(self.fi, self.k)
@@ -108,9 +108,9 @@ class Ui_Form(object): # класс нашей формы
         Form.setTabOrder(self.t, self.btn_start)
         Form.setTabOrder(self.btn_start, self.btn_pause)
 
-    def retranslateUi(self, Form):
-        _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "N маятников на пружинах"))
+    def retranslateUi(self, Form): # функция для задания текста на лейблы с подписями
+        _translate = QtCore.QCoreApplication.translate # встроенный элемент для использования переводов на разные языки (необязателен) сформирован автоматически
+        Form.setWindowTitle(_translate("Form", "N маятников на пружинах")) # задание текста на лейблы
         self.label.setText(_translate("Form", "w, рад"))
         self.label_2.setText(_translate("Form", "fi, рад"))
         self.btn_start.setText(_translate("Form", "Старт"))
@@ -121,36 +121,36 @@ class Ui_Form(object): # класс нашей формы
         self.label_6.setText(_translate("Form", "t"))
 
 
-def on_t_editing_finished():
-    set_t()
-    ui.chart.axisX().setRange(0, ui.t.value())
+def on_t_editing_finished(): # функция вызываемая при завершении редактирования поля т (времени)
+    set_t() # обновляем временной интервал
+    ui.chart.axisX().setRange(0, ui.t.value()) # изменяем размер оси х в соответствие с новым т
 
 
-def on_start_clicked():
-    if not ui.btn_pause.isEnabled():
-        result = system_calculation()
-        for k in range(0, int(ui.N.value())):
-            series.append(QtChart.QLineSeries())
+def on_start_clicked(): # функция обработчик нажатия на кнопку старт
+    if not ui.btn_pause.isEnabled(): # проверка на первичное нажатие старт
+        result = system_calculation() # получение расчета системы уравнений
+        for k in range(0, int(ui.N.value())): # для каждого маятника
+            series.append(QtChart.QLineSeries()) # мы создаем линию на графике
             for i in range(0, len(t)):
-                series[k].append(t[i], result[:, k][i])
-            ui.chart.addSeries(series[k])
-            series[k].attachAxis(ui.axisX)
+                series[k].append(t[i], result[:, k][i]) # добавляем полученные точки
+            ui.chart.addSeries(series[k]) # добавляем линию на график
+            series[k].attachAxis(ui.axisX) # добавляем к линии текушие оси
             series[k].attachAxis(ui.axisY)
 
-    set_disabled_splin_boxes(True)
-    ui.btn_start.setDisabled(True)
-    ui.btn_pause.setDisabled(False)
+    set_disabled_splin_boxes(True) # отключаем фозможность редактирования числовых полей
+    ui.btn_start.setDisabled(True)  # блокируем кнопку старт
+    ui.btn_pause.setDisabled(False) #  активируем кнопку стоп
 
 
-def on_pause_clicked():
-    ui.btn_start.setDisabled(False)
-    ui.btn_pause.setDisabled(True)
-    set_disabled_splin_boxes(False)
-    for k in range(0, int(ui.N.value())):
+def on_pause_clicked(): # функция обработчик кнопки стоп
+    ui.btn_start.setDisabled(False) # активирует кнопку старт
+    ui.btn_pause.setDisabled(True) # блокирует кнопку стоп
+    set_disabled_splin_boxes(False) # активирует числовые поля
+    for k in range(0, int(ui.N.value())): # очищает все линии графика
         series[k].clear()
 
 
-def set_disabled_splin_boxes(value):
+def set_disabled_splin_boxes(value): # функция для отключения возмежности редактирования полей формы
     ui.N.setDisabled(value)
     ui.F.setDisabled(value)
     ui.w.setDisabled(value)
@@ -158,31 +158,31 @@ def set_disabled_splin_boxes(value):
     ui.k.setDisabled(value)
 
 
-def set_t():
-    global t
-    t = arange(0, ui.t.value(), 0.1)
+def set_t(): # функция установки временного промежутка для расчетов
+    global t # используем глобальную переменную
+    t = arange(0, ui.t.value(), 0.1) # устанавливаем новый промежуток от 0 до значения поля формы т с шагом 0,1
 
 
-def system_calculation():
-    global t
-    N = int(ui.N.value())
-    F0 = ui.F.value()
-    w = ui.w.value()
-    fi = ui.fi.value()
-    k = ui.k.value()
-    set_t()
-    Y0 = [0]
-    for i in range(1, N):
-        Y0.append(0)
+def system_calculation(): # основная функция расчета модели 
+    global t # глобальный интервал времени
+    N = int(ui.N.value()) # значение количества маятников из цифрового поля
+    F0 = ui.F.value() # амплитуда внешней периодической силы из числового поля
+    w = ui.w.value() # частота внешней силы из числового поля
+    fi = ui.fi.value() # сдвиг по фазе внешней силы из числового поля
+    k = ui.k.value() # жесткость пружин из числового поля
+    set_t() # обеовление интервала времени
+    Y0 = [0] # массив размера N начальных значений 
+    for i in range(1, N): # перебераем кол маятников
+        Y0.append(0) # задаем ноль
 
-    def f(Y, t):
-        FY = [F0 * cos(w * t + fi) + k * (Y[1] - Y[0])]
+    def f(Y, t): # функция систамы уравнений
+        FY = [F0 * cos(w * t + fi) + k * (Y[1] - Y[0])] # левый маятник
         for i in range(1, N - 1):
-            FY.append(k * (Y[i - 1] - 2 * Y[i] + Y[i + 1]))
-        FY.append(k * (Y[N - 2] - Y[N - 1]))
+            FY.append(k * (Y[i - 1] - 2 * Y[i] + Y[i + 1])) # средние маятники
+        FY.append(k * (Y[N - 2] - Y[N - 1])) # правый маятник
         return FY
 
-    return odeint(f, Y0, t)
+    return odeint(f, Y0, t) # возврат функции для расчета дифф уравнений из библиотеки scipy
 
 
 if __name__ == "__main__": #  функция мейн точка фхода программы
